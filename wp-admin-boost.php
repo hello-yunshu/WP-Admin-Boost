@@ -31,13 +31,13 @@ class WP_ADMIN_BOOST
                 );
             });
 
-            update_option("wab_admin", get_option('wab_admin') ?: '2');
-            update_option("wab_admin_plugin", get_option('wab_admin_plugin') ?: '2');
-            update_option("wab_block_activate_plugin", get_option('wab_block_activate_plugin') ?: '');
+            update_option("wpab_admin", get_option('wpab_admin') ?: '2');
+            update_option("wpab_admin_plugin", get_option('wpab_admin_plugin') ?: '2');
+            update_option("wpab_block_activate_plugin", get_option('wpab_block_activate_plugin') ?: '');
             register_deactivation_hook(__FILE__, function () {
-                delete_option("wab_admin");
-                delete_option("wab_admin_plugin");
-                delete_option("wab_block_activate_plugin");
+                delete_option("wpab_admin");
+                delete_option("wpab_admin_plugin");
+                delete_option("wpab_block_activate_plugin");
             });
 
             add_action(is_multisite() ? 'network_admin_menu' : 'admin_menu', function () {
@@ -51,7 +51,7 @@ class WP_ADMIN_BOOST
                 );
             });
 
-            if (get_option('wab_admin') != 2 && !stristr($GLOBALS['wp_version'], 'alpha') && !stristr($GLOBALS['wp_version'], 'beta')) {
+            if (get_option('wpab_admin') != 2 && !stristr($GLOBALS['wp_version'], 'alpha') && !stristr($GLOBALS['wp_version'], 'beta')) {
                 add_action('init', function () {
                     ob_start(function ($buffer) {
                         $buffer = preg_replace('~' . home_url('/') . '(wp-admin|wp-includes)/(css|js)/~', sprintf('//cdn.jsdelivr.net/gh/WordPress/WordPress@%s/$1/$2/', $GLOBALS['wp_version']), $buffer);
@@ -60,15 +60,15 @@ class WP_ADMIN_BOOST
                 });
             };
 
-            if (get_option('wab_admin_plugin') == 1) {
+            if (get_option('wpab_admin_plugin') == 1) {
                 add_action('init', 'panyi_admin_speedup');
                 function panyi_admin_speedup()
                 {
                     ob_start(function ($buffer) {
                         $apl = get_option('active_plugins');
                         $plugins = get_plugins();
-                        if (get_option('wab_block_activate_plugin')) {
-                            $block_speedup = explode(",", get_option('wab_block_activate_plugin'));
+                        if (get_option('wpab_block_activate_plugin')) {
+                            $block_speedup = explode(",", get_option('wpab_block_activate_plugin'));
                         }
                         foreach ($apl as $p) {
                             if (isset($plugins[$p])) {
@@ -86,9 +86,9 @@ class WP_ADMIN_BOOST
         }
         if (is_admin()) {
             add_action('admin_init', function () {
-                register_setting('wpab', 'wab_admin');
-                register_setting('wpab', 'wab_admin_plugin');
-                register_setting('wpab', 'wab_block_activate_plugin');
+                register_setting('wpab', 'wpab_admin');
+                register_setting('wpab', 'wpab_admin_plugin');
+                register_setting('wpab', 'wpab_block_activate_plugin');
 
                 add_settings_section(
                     'wpab_section_main',
@@ -126,17 +126,17 @@ class WP_ADMIN_BOOST
 
     public function field_admin()
     {
-        $this->field_cb('wab_admin', '将WordPress核心所依赖的静态文件切换为公共资源，此选项极大的加快管理后台访问速度', true);
+        $this->field_cb('wpab_admin', '将WordPress核心所依赖的静态文件切换为公共资源，此选项极大的加快管理后台访问速度', true);
     }
 
     public function field_admin_plugin()
     {
-        $this->field_cb('wab_admin_plugin', '将所有激活的插件小文件切换为公共资源，进一步加快管理后台访问速度，<b>注意！请仔细检查是否兼容</b>', true);
+        $this->field_cb('wpab_admin_plugin', '将所有激活的插件小文件切换为公共资源，进一步加快管理后台访问速度，<b>注意！请仔细检查是否兼容</b>', true);
     }
 
     public function field_select_block_plugin()
     {
-        $ntap = explode(",", get_option('wab_block_activate_plugin'));
+        $ntap = explode(",", get_option('wpab_block_activate_plugin'));
         $apl = get_option('active_plugins');
         $plugins = get_plugins();
         //$activated_plugins = array();
@@ -197,9 +197,9 @@ class WP_ADMIN_BOOST
     public function options_page_html()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            update_option("wab_admin", sanitize_text_field($_POST['wab_admin']));
-            update_option("wab_admin_plugin", sanitize_text_field($_POST['wab_admin_plugin']));
-            update_option("wab_block_activate_plugin", sanitize_text_field(implode(',', $_POST['block_activate_plugin'])));
+            update_option("wpab_admin", sanitize_text_field($_POST['wpab_admin']));
+            update_option("wpab_admin_plugin", sanitize_text_field($_POST['wpab_admin_plugin']));
+            update_option("wpab_block_activate_plugin", sanitize_text_field(implode(',', $_POST['block_activate_plugin'])));
             echo '<div class="notice notice-success settings-error is-dismissible"><p><strong>设置已保存</strong></p></div>';
         }
 
