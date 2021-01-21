@@ -219,7 +219,7 @@ class WP_ADMIN_BOOST
         ?>
             </form>
         </div>
-        <p>
+        <p style="text-align:right;">
             欢迎访问<a href="https://www.idleleo.com/" target="_blank">无主界</a>！获取更多的WordPress技巧。<br/>
             感谢<a href="https://wp-china.org" target="_blank">WP中国本土化社区</a>的源代码。
         </p>
