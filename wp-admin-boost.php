@@ -139,7 +139,6 @@ class WP_ADMIN_BOOST
         $ntap = explode(",", get_option('wpab_block_activate_plugin'));
         $apl = get_option('active_plugins');
         $plugins = get_plugins();
-        //$activated_plugins = array();
         ?>
         <p class="description">
             请选择需要<b>禁用</b>加速的插件：
