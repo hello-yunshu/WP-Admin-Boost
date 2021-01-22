@@ -127,7 +127,7 @@ class WP_ADMIN_BOOST
     public function field_section_main()
     {
     ?>
-    <p class="description">使用jsdelivr提供的CDN加速WordPress后台，包括核心文件与插件小文件</p>
+        <p class="description">使用jsdelivr提供的CDN加速WordPress后台，包括核心文件与插件小文件</p>
     <?php
     }
 
