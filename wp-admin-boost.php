@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: WP Admin Boost
- * Description: 使用jsdelivr加速WordPress的后台核心小文件与插件小文件，大幅提高访问速度
+ * Description: 使用jsdelivr加速WordPress的后台核心小文件与插件小文件，大幅提高后台访问速度。
  * Author: 潘羿
  * Author URI:https://www.idleleo.com/
- * Version: 1.0.1
+ * Version: 1.0.2
  * Network: True
  * License: GPLv3 or later
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -92,8 +92,8 @@ class WP_ADMIN_BOOST
 
                 add_settings_section(
                     'wpab_section_main',
-                    '使用jsdelivr提供的CDN加速wordPress后台，包括核心文件与插件小文件',
-                    '',
+                    '设置',
+                    [$this, 'field_section_main'],
                     'wpab'
                 );
 
@@ -122,6 +122,13 @@ class WP_ADMIN_BOOST
                 );
             });
         }
+    }
+    
+    public function field_section_main()
+    {
+    ?>
+    <p class="description">使用jsdelivr提供的CDN加速WordPress后台，包括核心文件与插件小文件</p>
+    <?php
     }
 
     public function field_admin()
@@ -182,7 +189,7 @@ class WP_ADMIN_BOOST
         $option_value = get_option($option_name);
         ?>
         <label>
-            <input type="radio" value="1" name="<?php echo $option_name; ?>" <?php checked($option_value, '1');?>><?php echo $is_global ? '启用' : '全局启用' ?>
+            <input type="radio" value="1" name="<?php echo $option_name; ?>" <?php checked($option_value, '1');?>><?php echo $is_global ? '启用&emsp;&emsp;' : '全局启用&emsp;&emsp;' ?>
         </label>
         <label>
             <input type="radio" value="2" name="<?php echo $option_name; ?>" <?php checked($option_value, '2');?>>禁用
