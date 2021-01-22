@@ -72,11 +72,11 @@ class WP_ADMIN_BOOST
                         }
                         foreach ($apl as $p) {
                             if (isset($plugins[$p])) {
-                                $path = preg_replace('~(.*)/(?:.*).php~', '$1', $p);
-                                if (in_array($path, $block_speedup)) {
+                                $path = explode("/", $p);
+                                if (in_array($path[0], $block_speedup)) {
                                     continue;
                                 }
-                                $buffer = preg_replace('~' . home_url('/') . 'wp-content/plugins/' . $path . '/(.*).(css|js|woff|woff2|jpg|png|gif|svg|webp)~', sprintf('//cdn.jsdelivr.net/wp/plugins/' . $path . '/tags/%s/$1.$2', $plugins[$p]['Version']), $buffer);
+                                $buffer = preg_replace('~' . home_url('/') . 'wp-content/plugins/' . $path[0] . '/(.*).(css|js|woff|woff2|jpg|png|gif|svg|webp)~', sprintf('//cdn.jsdelivr.net/wp/plugins/' . $path[0] . '/tags/%s/$1.$2', $plugins[$p]['Version']), $buffer);
                             }
                         }
                         return $buffer;
@@ -167,13 +167,13 @@ class WP_ADMIN_BOOST
             <tbody>
             <?php
                 foreach ($apl as $p) {
-                    $path = preg_replace('~(.*)/(?:.*).php~', '$1', $p);
+                    $path = explode("/", $p);
                     if (isset($plugins[$p])) {
                     ?>
                     <tr>
                         <td><?php echo $plugins[$p]['Name']; ?></td>
                         <td><?php echo $plugins[$p]['Version']; ?></td>
-                        <td><label><input type="checkbox" value="<?php echo $path; ?>" name="block_activate_plugin[]" <?php if(in_array($path, $ntap)){echo'checked="checked"';} ?>></label></td>
+                        <td><label><input type="checkbox" value="<?php echo $path[0]; ?>" name="block_activate_plugin[]" <?php if(in_array($path[0], $ntap)){echo'checked="checked"';} ?>></label></td>
                     </tr>
             <?php 
                 }
