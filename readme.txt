@@ -51,9 +51,6 @@ License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 == Changelog ==
  
-= 1.0.3 =
-* 添加更多加速后缀
-
 = 1.0.2 =
 * 插件诞生
  
