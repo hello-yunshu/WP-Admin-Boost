@@ -1,10 +1,11 @@
 <?php
+
 /**
  * Plugin Name: WP Admin Boost
  * Description: 使用jsdelivr加速WordPress的后台核心小文件与插件小文件，大幅提高后台访问速度。
  * Author: 潘羿
  * Author URI:https://www.idleleo.com/
- * Version: 1.0.2
+ * Version: 1.0.3
  * Network: True
  * License: GPLv3 or later
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
@@ -32,10 +33,14 @@ class WP_ADMIN_BOOST
             });
 
             update_option("wpab_admin", get_option('wpab_admin') ?: '2');
+            update_option("wpab_admin_googlefonts", get_option('wpab_admin_googlefonts') ?: '2');
+            update_option("wpab_admin_googleajax", get_option('wpab_admin_googleajax') ?: '2');
             update_option("wpab_admin_plugin", get_option('wpab_admin_plugin') ?: '2');
             update_option("wpab_block_activate_plugin", get_option('wpab_block_activate_plugin') ?: '');
             register_deactivation_hook(__FILE__, function () {
                 delete_option("wpab_admin");
+                delete_option("wpab_admin_googlefonts");
+                delete_option("wpab_admin_googleajax");
                 delete_option("wpab_admin_plugin");
                 delete_option("wpab_block_activate_plugin");
             });
@@ -59,6 +64,15 @@ class WP_ADMIN_BOOST
                     });
                 });
             };
+
+            if (!(defined('DOING_AJAX') && DOING_AJAX)) {
+                if (get_option('wpab_admin_googlefonts') != 2) {
+                    $this->page_str_replace('str_replace', ['fonts.googleapis.com', 'fonts.font.im'], get_option('wpab_admin_googlefonts'));
+                }
+                if (get_option('wpab_admin_googleajax') != 2) {
+                    $this->page_str_replace('str_replace', ['ajax.googleapis.com', 'ajax.proxy.ustclug.org'], get_option('wpab_admin_googleajax'));
+                }
+            }
 
             if (get_option('wpab_admin_plugin') == 1) {
                 add_action('init', 'panyi_admin_speedup');
@@ -87,6 +101,8 @@ class WP_ADMIN_BOOST
         if (is_admin()) {
             add_action('admin_init', function () {
                 register_setting('wpab', 'wpab_admin');
+                register_setting('wpab', 'wpab_admin_googlefonts');
+                register_setting('wpab', 'wpab_admin_googleajax');
                 register_setting('wpab', 'wpab_admin_plugin');
                 register_setting('wpab', 'wpab_block_activate_plugin');
 
@@ -101,6 +117,22 @@ class WP_ADMIN_BOOST
                     'wpab_field_select_admin',
                     '加速管理后台',
                     [$this, 'field_admin'],
+                    'wpab',
+                    'wpab_section_main'
+                );
+
+                add_settings_field(
+                    'wpab_field_select_googlefonts',
+                    '加速谷歌字体',
+                    [$this, 'field_admin_googlefonts'],
+                    'wpab',
+                    'wpab_section_main'
+                );
+
+                add_settings_field(
+                    'wpab_field_select_googleajax',
+                    '加速谷歌前端公共库',
+                    [$this, 'field_admin_googleajax'],
                     'wpab',
                     'wpab_section_main'
                 );
@@ -123,10 +155,10 @@ class WP_ADMIN_BOOST
             });
         }
     }
-    
+
     public function field_section_main()
     {
-    ?>
+?>
         <p class="description">使用jsdelivr提供的CDN加速WordPress后台，包括核心小文件与插件小文件</p>
     <?php
     }
@@ -134,6 +166,16 @@ class WP_ADMIN_BOOST
     public function field_admin()
     {
         $this->field_cb('wpab_admin', '将WordPress核心所依赖的静态文件切换为公共资源，此选项极大的加快管理后台访问速度', true);
+    }
+
+    public function field_admin_googlefonts()
+    {
+        $this->field_cb('wpab_admin_googlefonts', '将加速谷歌字体，使用谷歌在中国的服务，<b>未包含谷歌字体没必要使用</b>', true);
+    }
+
+    public function field_admin_googleajax()
+    {
+        $this->field_cb('wpab_admin_googleajax', '将加速谷歌前端公共库，使用中科大的服务，<b>未包含谷歌前端公共库没必要使用</b>', true);
     }
 
     public function field_admin_plugin()
@@ -146,7 +188,7 @@ class WP_ADMIN_BOOST
         $ntap = explode(",", get_option('wpab_block_activate_plugin'));
         $apl = get_option('active_plugins');
         $plugins = get_plugins();
-        ?>
+    ?>
         <p class="description">
             请选择需要<b>禁用</b>加速的插件：
         </p>
@@ -165,45 +207,70 @@ class WP_ADMIN_BOOST
                 </tr>
             </thead>
             <tbody>
-            <?php
+                <?php
                 foreach ($apl as $p) {
                     $path = explode("/", $p);
                     if (isset($plugins[$p])) {
-                    ?>
-                    <tr>
-                        <td><?php echo $plugins[$p]['Name']; ?></td>
-                        <td><?php echo $plugins[$p]['Version']; ?></td>
-                        <td><label><input type="checkbox" value="<?php echo $path[0]; ?>" name="block_activate_plugin[]" <?php if(in_array($path[0], $ntap)){echo'checked="checked"';} ?>></label></td>
-                    </tr>
-            <?php 
+                ?>
+                        <tr>
+                            <td><?php echo $plugins[$p]['Name']; ?></td>
+                            <td><?php echo $plugins[$p]['Version']; ?></td>
+                            <td><label><input type="checkbox" value="<?php echo $path[0]; ?>" name="block_activate_plugin[]" <?php if (in_array($path[0], $ntap)) {
+                                                                                                                                    echo 'checked="checked"';
+                                                                                                                                } ?>></label></td>
+                        </tr>
+                <?php
+                    }
                 }
-            }
-            ?>
+                ?>
             </tbody>
         </table>
-        <?php
+    <?php
     }
 
     private function field_cb($option_name, $description, $is_global = false)
     {
         $option_value = get_option($option_name);
-        ?>
+    ?>
         <label>
-            <input type="radio" value="1" name="<?php echo $option_name; ?>" <?php checked($option_value, '1');?>><?php echo $is_global ? '启用&emsp;&emsp;' : '全局启用&emsp;&emsp;' ?>
+            <input type="radio" value="1" name="<?php echo $option_name; ?>" <?php checked($option_value, '1'); ?>><?php echo $is_global ? '启用&emsp;&emsp;' : '全局启用&emsp;&emsp;' ?>
         </label>
         <label>
-            <input type="radio" value="2" name="<?php echo $option_name; ?>" <?php checked($option_value, '2');?>>禁用
+            <input type="radio" value="2" name="<?php echo $option_name; ?>" <?php checked($option_value, '2'); ?>>禁用
         </label>
         <p class="description">
             <?php echo $description; ?>
         </p>
-        <?php
+    <?php
+    }
+
+    /**
+     * @param $replace_func string 要调用的字符串关键字替换函数
+     * @param $param array 传递给字符串替换函数的参数
+     * @param $level int 替换级别：1.全局替换 3.前台替换 4.后台替换
+     */
+    private function page_str_replace($replace_func, $param, $level)
+    {
+        if ($level == 3 && is_admin()) {
+            return;
+        } elseif ($level == 4 && !is_admin()) {
+            return;
+        }
+
+        add_action('init', function () use ($replace_func, $param) {
+            ob_start(function ($buffer) use ($replace_func, $param) {
+                $param[] = $buffer;
+                return call_user_func_array($replace_func, $param);
+            });
+        });
     }
 
     public function options_page_html()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             update_option("wpab_admin", sanitize_text_field($_POST['wpab_admin']));
+            update_option("wpab_admin_googlefonts", sanitize_text_field($_POST['wpab_admin_googlefonts']));
+            update_option("wpab_admin_googleajax", sanitize_text_field($_POST['wpab_admin_googleajax']));
             update_option("wpab_admin_plugin", sanitize_text_field($_POST['wpab_admin_plugin']));
             update_option("wpab_block_activate_plugin", sanitize_text_field(implode(',', $_POST['block_activate_plugin'])));
             echo '<div class="notice notice-success settings-error is-dismissible"><p><strong>设置已保存</strong></p></div>';
@@ -214,21 +281,21 @@ class WP_ADMIN_BOOST
         }
 
         settings_errors('wpab_messages');
-        ?>
+    ?>
         <div class="wrap">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             <form action="<?php echo $this->page_url; ?>" method="post">
                 <?php
-        settings_fields('wpab');
-        do_settings_sections('wpab');
-        submit_button('保存配置');
-        ?>
+                settings_fields('wpab');
+                do_settings_sections('wpab');
+                submit_button('保存配置');
+                ?>
             </form>
         </div>
         <p style="text-align:right;">
-            欢迎访问<a href="https://www.idleleo.com/" target="_blank">无主界</a>！获取更多的WordPress技巧。<br/>
+            欢迎访问<a href="https://www.idleleo.com/" target="_blank">无主界</a>！获取更多的WordPress技巧。<br />
             感谢<a href="https://wp-china.org" target="_blank">WP中国本土化社区</a>的源代码。
         </p>
-        <?php
+<?php
     }
 }
